@@ -14,9 +14,9 @@
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
 
-    /* 🔥 importante */
+    /* 🔥 Emit config (necessário p/ allowImportingTsExtensions funcionar) */
     "noEmit": true,
-    "noEmitOnError": false,
+    "allowImportingTsExtensions": true,
 
     "jsx": "react-jsx",
 
@@ -24,9 +24,7 @@
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
 }
