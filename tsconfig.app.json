@@ -8,14 +8,19 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
 
+    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
 
-    "noEmit": true, // volta pra true
+    /* 🔥 importante: deixar o TS emitir mesmo com erro */
+    "noEmit": false,
+    "noEmitOnError": false,
+
     "jsx": "react-jsx",
 
+    /* Linting (opcional desativar os avisos chatos) */
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
