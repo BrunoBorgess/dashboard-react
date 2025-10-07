@@ -9,17 +9,19 @@ type MonthlyData = { month: string; previsto: number; realizado: number; date: s
 type FinalData = { month: string; value: number; date: string };
 type AllData = Record<string, MonthlyData[] | FinalData[]>;
 
-interface SidebarProps { activeTab: string; onTabChange: (tab: string) => void; themeColor: string; }
-interface SidebarItemProps { icon: React.ReactNode; label: string; active?: boolean; onClick: () => void; themeColor: string; }
+type ThemeColor = 'purple' | 'blue' | 'green';
+
+interface SidebarProps { activeTab: string; onTabChange: (tab: string) => void; themeColor: ThemeColor; }
+interface SidebarItemProps { icon: React.ReactNode; label: string; active?: boolean; onClick: () => void; themeColor: ThemeColor; }
 interface HeaderProps {
   selectedCategory: string; onCategoryChange: (category: string) => void; startMonth: string; startYear: string; endMonth: string; endYear: string;
   onStartMonthChange: (month: string) => void; onStartYearChange: (year: string) => void; onEndMonthChange: (month: string) => void; onEndYearChange: (year: string) => void;
-  onSearch: () => void; onExportPDF: () => void; onExportCSV: () => void; showFilters: boolean; themeColor: string; activeTab: string;
+  onSearch: () => void; onExportPDF: () => void; onExportCSV: () => void; showFilters: boolean; themeColor: ThemeColor; activeTab: string;
 }
-interface KPICardProps { title: string; value: number; trend: number; icon: React.ElementType; isPercentage?: boolean; themeColor: string; }
-interface CategoryChartProps { data: MonthlyData[] | FinalData[]; category: string; isFinal?: boolean; isSingleMonth: boolean; themeColor: string; colorSet?: string[]; }
+interface KPICardProps { title: string; value: number; trend: number; icon: React.ElementType; isPercentage?: boolean; themeColor: ThemeColor; }
+interface CategoryChartProps { data: MonthlyData[] | FinalData[]; category: string; isFinal?: boolean; isSingleMonth: boolean; themeColor: ThemeColor; colorSet?: string[]; }
 interface FinancialTabProps {
-  data: AllData; selectedCategory: string; startMonth: string; startYear: string; endMonth: string; endYear: string; setSelectedCategory: (category: string) => void; themeColor: string; isRevenueTab?: boolean;
+  data: AllData; selectedCategory: string; startMonth: string; startYear: string; endMonth: string; endYear: string; setSelectedCategory: (category: string) => void; themeColor: ThemeColor; isRevenueTab?: boolean;
 }
 
 const mainCategories = ["Administração", "Compra de Animais", "Custos Combustíveis Gerais", "Custos Equip. Proteção Individual", "Inseminação", "Manutenção e Conservação", "Mão-de-Obra", "Materiais", "Nutrição", "Sanidade", "Serviços", "Tarifas"];
@@ -57,7 +59,9 @@ const categoryRanges = {
   "Receita Operacional Bruta": { min: 0, max: 0, variation: 0, trend: () => (Math.random() * 10 - 5).toFixed(1) },
   "Receita Operacional Líquida": { min: 0, max: 0, variation: 0, trend: () => (Math.random() * 10 - 5).toFixed(1) },
   Resultado: { min: 0, max: 0, variation: 0, trend: () => (Math.random() * 10 - 5).toFixed(1) },
-};
+} as const;
+
+type CategoryKey = keyof typeof categoryRanges;
 
 const months = [
   { value: "01", label: "Jan" }, { value: "02", label: "Fev" }, { value: "03", label: "Mar" }, { value: "04", label: "Abr" },
@@ -71,7 +75,9 @@ const themeColors = {
   purple: { primary: "#a855f7", hover: "#c084fc", bg: "bg-purple-600", border: "border-purple-500" },
   blue: { primary: "#3b82f6", hover: "#60a5fa", bg: "bg-blue-600", border: "border-blue-500" },
   green: { primary: "#10b981", hover: "#34d399", bg: "bg-green-600", border: "border-green-500" },
-};
+} as const;
+
+type ColorSetKey = 'default' | 'custoFixo' | 'custoVariavel' | 'custoTotal' | 'receitaOperacionalBruta' | 'receitaOperacionalLiquida' | 'resultado';
 
 const COLOR_SETS = {
   purple: {
@@ -89,7 +95,7 @@ const COLOR_SETS = {
     custoFixo: ["#065f46", "#10b981"], custoVariavel: ["#047857", "#34d399"], custoTotal: ["#047857", "#34d399"],
     receitaOperacionalBruta: ["#15803d", "#22c55e"], receitaOperacionalLiquida: ["#15803d", "#22c55e"], resultado: ["#064e3b", "#10b981"],
   },
-};
+} as { [key in ThemeColor]: { [key in ColorSetKey]: string[] } };
 
 const getMonthNames = (startMonth: string, startYear: string, endMonth: string, endYear: string) => {
   const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, 1);
@@ -105,7 +111,7 @@ const getMonthNames = (startMonth: string, startYear: string, endMonth: string, 
 };
 
 const generateMonthlyData = (monthNames: string[], startYear: string, category: string): MonthlyData[] => {
-  const range = categoryRanges[category] || { min: 5000, max: 15000, variation: 500 };
+  const range = categoryRanges[category as CategoryKey] || { min: 5000, max: 15000, variation: 500 };
   return monthNames.map((month, index) => {
     const base = range.min + index * range.variation;
     return {
@@ -120,7 +126,7 @@ const generateMonthlyData = (monthNames: string[], startYear: string, category: 
 const generateRevenueData = (monthNames: string[], startYear: string): Record<string, FinalData[]> => {
   return revenueCategories.reduce((acc, cat) => {
     acc[cat] = monthNames.map((month, index) => {
-      const range = categoryRanges[cat] || { min: 5000, max: 15000, variation: 500 };
+      const range = categoryRanges[cat as CategoryKey] || { min: 5000, max: 15000, variation: 500 };
       const base = range.min + index * range.variation;
       return {
         month,
@@ -429,7 +435,7 @@ function CategoryChart({ data, category, isFinal = false, isSingleMonth, themeCo
   );
 }
 
-function CategoryDistributionChart({ data, startMonth, startYear, endMonth, endYear, themeColor }: { data: AllData; startMonth: string; startYear: string; endMonth: string; endYear: string; themeColor: string }) {
+function CategoryDistributionChart({ data, startMonth, startYear, endMonth, endYear, themeColor }: { data: AllData; startMonth: string; startYear: string; endMonth: string; endYear: string; themeColor: ThemeColor }) {
   const monthNames = getMonthNames(startMonth, startYear, endMonth, endYear);
   const pieData = useMemo(() => generatePieChartData(data, monthNames), [data, monthNames]);
   return (
@@ -443,8 +449,8 @@ function CategoryDistributionChart({ data, startMonth, startYear, endMonth, endY
             cx="50%"
             cy="50%"
             outerRadius={130}
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-            labelLine={{ length: 20, length2: 20 }}
+            label={({ name, percent }) => `${name}: ${((percent as number) * 100).toFixed(1)}%`}
+            labelLine={true}
             paddingAngle={3}
           >
             {pieData.map((_, index) => (
@@ -452,14 +458,14 @@ function CategoryDistributionChart({ data, startMonth, startYear, endMonth, endY
             ))}
           </Pie>
           <Tooltip contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "#e5e7eb", borderRadius: "12px" }} formatter={(value: number, name: string) => [`R$${value.toLocaleString("pt-BR")}`, name]} />
-          <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: 11, paddingTop: 30, lineHeight: "1.5rem" }} />
+          <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: 14, paddingTop: 30, lineHeight: "1.5rem" }} />
         </PieChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-function RevenueDistributionChart({ data, startMonth, startYear, endMonth, endYear, themeColor }: { data: AllData; startMonth: string; startYear: string; endMonth: string; endYear: string; themeColor: string }) {
+function RevenueDistributionChart({ data, startMonth, startYear, endMonth, endYear, themeColor }: { data: AllData; startMonth: string; startYear: string; endMonth: string; endYear: string; themeColor: ThemeColor }) {
   const monthNames = getMonthNames(startMonth, startYear, endMonth, endYear);
   const pieData = useMemo(() => generateRevenuePieChartData(data, monthNames), [data, monthNames]);
   return (
@@ -473,8 +479,8 @@ function RevenueDistributionChart({ data, startMonth, startYear, endMonth, endYe
             cx="50%"
             cy="50%"
             outerRadius={130}
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-            labelLine={{ length: 20, length2: 20 }}
+            label={({ name, percent }) => `${name}: ${((percent as number) * 100).toFixed(1)}%`}
+            labelLine={true}
             paddingAngle={3}
           >
             {pieData.map((_, index) => (
@@ -482,19 +488,23 @@ function RevenueDistributionChart({ data, startMonth, startYear, endMonth, endYe
             ))}
           </Pie>
           <Tooltip contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "#e5e7eb", borderRadius: "12px" }} formatter={(value: number, name: string) => [`R$${value.toLocaleString("pt-BR")}`, name]} />
-          <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: 11, paddingTop: 30, lineHeight: "1.5rem" }} />
+          <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: 14, paddingTop: 30, lineHeight: "1.5rem" }} />
         </PieChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-function FinalMetrics({ data, themeColor }: { data: AllData; themeColor: string }) {
+function FinalMetrics({ data, themeColor }: { data: AllData; themeColor: ThemeColor }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {finalCategories.map((cat) => (
-        <CategoryChart key={cat} data={data[cat] || []} category={cat} isFinal isSingleMonth={data[cat]?.length === 1} themeColor={themeColor} colorSet={COLOR_SETS[themeColor][cat.toLowerCase().replace(" ", "")]} />
-      ))}
+      {finalCategories.map((cat) => {
+        const dynamicKey = cat.toLowerCase().replace(/ /g, "") as ColorSetKey;
+        const colorSet = COLOR_SETS[themeColor][dynamicKey] || COLOR_SETS[themeColor].default;
+        return (
+          <CategoryChart key={cat} data={data[cat] || []} category={cat} isFinal isSingleMonth={data[cat]?.length === 1} themeColor={themeColor} colorSet={colorSet} />
+        );
+      })}
     </div>
   );
 }
@@ -510,8 +520,8 @@ function FinancialTab({ data, selectedCategory, setSelectedCategory, startMonth 
   return (
     <main className="flex-1 overflow-y-auto p-8 space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KPICard title="Previsto Total" value={totals.totalPrevisto} trend={parseFloat(categoryRanges[selectedCategory]?.trend?.() || (Math.random() * 10 - 5).toFixed(1))} icon={TrendingUp} themeColor={themeColor} />
-        <KPICard title={isRevenueTab ? "Receita Total" : "Realizado Total"} value={totals.totalRealizado || totals.totalReceitaBruta || totals.totalReceitaLiquida || totals.totalResultado} trend={parseFloat(categoryRanges[selectedCategory]?.trend?.() || (Math.random() * 8 - 4).toFixed(1))} icon={DollarSign} themeColor={themeColor} />
+        <KPICard title="Previsto Total" value={totals.totalPrevisto} trend={parseFloat(categoryRanges[selectedCategory as CategoryKey]?.trend?.() || (Math.random() * 10 - 5).toFixed(1))} icon={TrendingUp} themeColor={themeColor} />
+        <KPICard title={isRevenueTab ? "Receita Total" : "Realizado Total"} value={totals.totalRealizado || totals.totalReceitaBruta || totals.totalReceitaLiquida || totals.totalResultado} trend={parseFloat(categoryRanges[selectedCategory as CategoryKey]?.trend?.() || (Math.random() * 8 - 4).toFixed(1))} icon={DollarSign} themeColor={themeColor} />
         <KPICard title="Variação Geral" value={Math.abs(totals.variacao)} trend={totals.variacao} icon={TrendingUp} isPercentage themeColor={themeColor} />
       </div>
       <GeneralInfo data={data} selectedCategory={selectedCategory} />
@@ -580,7 +590,7 @@ function GeneralInfo({ data, selectedCategory }: { data: AllData; selectedCatego
   );
 }
 
-function InicioTab({ data, themeColor }: { data: AllData; themeColor: string }) {
+function InicioTab({ data, themeColor }: { data: AllData; themeColor: ThemeColor }) {
   const topCategories = useMemo(() => {
     return mainCategories.map((cat) => {
       const monthly = data[cat] as MonthlyData[];
@@ -600,11 +610,11 @@ function InicioTab({ data, themeColor }: { data: AllData; themeColor: string }) 
           <h3 className="text-lg font-bold text-white mb-4">Principais Categorias por Gasto</h3>
           <ResponsiveContainer width="100%" height={450}>
             <PieChart>
-              <Pie data={topCategories} dataKey="value" nameKey="name" cx="50%" cy="40%" outerRadius={120} label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`} labelLine={true} paddingAngle={2}>
+              <Pie data={topCategories} dataKey="value" nameKey="name" cx="50%" cy="40%" outerRadius={120} label={({ name, percent }) => `${name}: ${((percent as number) * 100).toFixed(1)}%`} labelLine={true} paddingAngle={2}>
                 {topCategories.map((_, index) => (<Cell key={`cell-${index}`} fill={COLOR_SETS[themeColor].default[index % COLOR_SETS[themeColor].default.length]} />))}
               </Pie>
               <Tooltip contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "#e5e7eb", borderRadius: "12px" }} formatter={(value: number, name: string) => [`R$${value.toLocaleString("pt-BR")}`, name]} />
-              <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: 12, paddingTop: 20, lineHeight: "1.5rem" }} />
+              <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: 14, paddingTop: 20, lineHeight: "1.5rem" }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -659,7 +669,7 @@ function PlanilhaTab() {
   );
 }
 
-function ConfiguracoesTab({ themeColor, setThemeColor }: { themeColor: string; setThemeColor: (color: string) => void }) {
+function ConfiguracoesTab({ themeColor, setThemeColor }: { themeColor: ThemeColor; setThemeColor: (color: ThemeColor) => void }) {
   return (
     <main className="flex-1 p-8 space-y-8">
       <h2 className="text-2xl font-bold text-white">Configurações</h2>
@@ -670,7 +680,7 @@ function ConfiguracoesTab({ themeColor, setThemeColor }: { themeColor: string; s
       </div>
       <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
         <h3 className="text-lg font-semibold text-white">Cor Principal</h3>
-        <select value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="bg-gray-700 text-gray-200 p-2 rounded mt-2">
+        <select value={themeColor} onChange={(e) => setThemeColor(e.target.value as ThemeColor)} className="bg-gray-700 text-gray-200 p-2 rounded mt-2">
           <option value="purple">Roxo</option><option value="blue">Azul</option><option value="green">Verde</option>
         </select>
       </div>
@@ -712,7 +722,7 @@ export default function Home() {
   const [endMonth, setEndMonth] = useState(currentMonth);
   const [endYear, setEndYear] = useState(currentYear);
   const [categoryData, setCategoryData] = useState<AllData>(generateAllData(startMonth, startYear, endMonth, endYear));
-  const [themeColor, setThemeColor] = useState("purple");
+  const [themeColor, setThemeColor] = useState<ThemeColor>("purple");
 
   const handleSearch = () => {
     const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, 1);
