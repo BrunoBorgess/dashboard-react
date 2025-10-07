@@ -202,7 +202,7 @@ const calculateCategoryTotals = (categoryData: AllData, category: string) => {
     const totalReceitaBruta = categoryData["Receita Operacional Bruta"] ? (categoryData["Receita Operacional Bruta"] as FinalData[]).reduce((acc, d) => acc + d.value, 0) : 0;
     const totalReceitaLiquida = categoryData["Receita Operacional Líquida"] ? (categoryData["Receita Operacional Líquida"] as FinalData[]).reduce((acc, d) => acc + d.value, 0) : 0;
     const totalResultado = categoryData["Resultado"] ? (categoryData["Resultado"] as FinalData[]).reduce((acc, d) => acc + d.value, 0) : 0;
-    const variacao = totalPrevisto !== 0 ? ((totalRealizado - totalPrevisto) / totalPrevisto * 100) : 0;
+const variacao = totalPrevisto !== 0 ? parseFloat(((totalRealizado - totalPrevisto) / totalPrevisto * 100).toFixed(1)) : 0;
     return { totalPrevisto, totalRealizado, totalReceitaBruta, totalReceitaLiquida, totalResultado, variacao };
   }
 
