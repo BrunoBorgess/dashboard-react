@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { BarChart3, Home as HomeIcon, FileSpreadsheet, TrendingUp, DollarSign, Filter, Calendar, Search, Download, Settings, HelpCircle } from "lucide-react";
 import clsx from "clsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+// import "jspdf-autotable";
 
 type MonthlyData = { month: string; previsto: number; realizado: number; date: string };
 type FinalData = { month: string; value: number; date: string };
@@ -762,6 +762,7 @@ export default function Home() {
       return [cat, `R$ ${catValue.toLocaleString("pt-BR")}`, `R$ ${catValue.toLocaleString("pt-BR")}`];
     });
 
+    /*
     doc.autoTable({
       startY: 70,
       head: [["Categoria", "Previsto", "Realizado"]],
@@ -770,6 +771,7 @@ export default function Home() {
       styles: { fontSize: 9, cellPadding: 3 },
       headStyles: { fillColor: [128, 0, 128], textColor: [255, 255, 255] },
     });
+    */
 
     doc.save(`dashboard_financeiro_${activeTab}_${startMonth}_${startYear}_a_${endMonth}_${endYear}.pdf`);
   };
