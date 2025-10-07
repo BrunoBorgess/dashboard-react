@@ -111,7 +111,7 @@ const getMonthNames = (startMonth: string, startYear: string, endMonth: string, 
 };
 
 const generateMonthlyData = (monthNames: string[], startYear: string, category: string): MonthlyData[] => {
-  const range = categoryRanges[category as CategoryKey] || { min: 5000, max: 15000, variation: 500 };
+  const range = (categoryRanges as any)[category] || { min: 5000, max: 15000, variation: 500 };
   return monthNames.map((month, index) => {
     const base = range.min + index * range.variation;
     return {
@@ -126,7 +126,7 @@ const generateMonthlyData = (monthNames: string[], startYear: string, category: 
 const generateRevenueData = (monthNames: string[], startYear: string): Record<string, FinalData[]> => {
   return revenueCategories.reduce((acc, cat) => {
     acc[cat] = monthNames.map((month, index) => {
-      const range = categoryRanges[cat as CategoryKey] || { min: 5000, max: 15000, variation: 500 };
+      const range = (categoryRanges as any)[cat] || { min: 5000, max: 15000, variation: 500 };
       const base = range.min + index * range.variation;
       return {
         month,
@@ -296,7 +296,7 @@ function SidebarItem({ icon, label, active = false, onClick, themeColor }: Sideb
   return (
     <button
       onClick={onClick}
-      className={clsx("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200", active ? `${themeColors[themeColor].bg}/20 text-${themeColor}-400 ${themeColors[themeColor].border}/30` : `text-gray-300 hover:bg-gray-800 hover:text-${themeColor}-300`)}
+      className={clsx("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200", active ? `${(themeColors as any)[themeColor].bg}/20 text-${themeColor}-400 ${(themeColors as any)[themeColor].border}/30` : `text-gray-300 hover:bg-gray-800 hover:text-${themeColor}-300`)}
       aria-label={label}
     >
       {icon}
@@ -318,12 +318,12 @@ function Header({ selectedCategory, onCategoryChange, startMonth, startYear, end
                 value={selectedCategory}
                 onChange={(e) => onCategoryChange(e.target.value)}
                 className={clsx("bg-gray-800 text-sm text-gray-200 outline-none rounded", `focus:ring-2 focus:ring-${themeColor}-500`)}
-                style={{ backgroundColor: "#1f2937", color: themeColors[themeColor].primary }}
+                style={{ backgroundColor: "#1f2937", color: (themeColors as any)[themeColor].primary }}
                 aria-label="Selecionar categoria"
               >
-                <option value="" style={{ color: themeColors[themeColor].primary }}>Todas as Categorias</option>
+                <option value="" style={{ color: (themeColors as any)[themeColor].primary }}>Todas as Categorias</option>
                 {(activeTab === "custos" ? mainCategories : revenueCategories).concat(finalCategories).map((cat) => (
-                  <option key={cat} value={cat} style={{ color: themeColors[themeColor].primary }}>{cat}</option>
+                  <option key={cat} value={cat} style={{ color: (themeColors as any)[themeColor].primary }}>{cat}</option>
                 ))}
               </select>
             </div>
@@ -333,40 +333,40 @@ function Header({ selectedCategory, onCategoryChange, startMonth, startYear, end
                 value={startMonth}
                 onChange={(e) => onStartMonthChange(e.target.value)}
                 className={clsx("text-sm text-gray-200 outline-none w-16 rounded", `focus:ring-2 focus:ring-${themeColor}-500`)}
-                style={{ backgroundColor: "#1f2937", color: themeColors[themeColor].primary }}
+                style={{ backgroundColor: "#1f2937", color: (themeColors as any)[themeColor].primary }}
                 aria-label="Mês inicial"
               >
-                {months.map((m) => (<option key={m.value} value={m.value} style={{ color: themeColors[themeColor].primary }}>{m.label}</option>))}
+                {months.map((m) => (<option key={m.value} value={m.value} style={{ color: (themeColors as any)[themeColor].primary }}>{m.label}</option>))}
               </select>
               <select
                 value={startYear}
                 onChange={(e) => onStartYearChange(e.target.value)}
                 className={clsx("text-sm text-gray-200 outline-none w-20 rounded", `focus:ring-2 focus:ring-${themeColor}-500`)}
-                style={{ backgroundColor: "#1f2937", color: themeColors[themeColor].primary }}
+                style={{ backgroundColor: "#1f2937", color: (themeColors as any)[themeColor].primary }}
                 aria-label="Ano inicial"
               >
-                {years.map((y) => (<option key={y} value={y} style={{ color: themeColors[themeColor].primary }}>{y}</option>))}
+                {years.map((y) => (<option key={y} value={y} style={{ color: (themeColors as any)[themeColor].primary }}>{y}</option>))}
               </select>
               <span className="text-xs text-gray-400 px-1">até</span>
               <select
                 value={endMonth}
                 onChange={(e) => onEndMonthChange(e.target.value)}
                 className={clsx("text-sm text-gray-200 outline-none w-16 rounded", `focus:ring-2 focus:ring-${themeColor}-500`)}
-                style={{ backgroundColor: "#1f2937", color: themeColors[themeColor].primary }}
+                style={{ backgroundColor: "#1f2937", color: (themeColors as any)[themeColor].primary }}
                 aria-label="Mês final"
               >
-                {months.map((m) => (<option key={m.value} value={m.value} style={{ color: themeColors[themeColor].primary }}>{m.label}</option>))}
+                {months.map((m) => (<option key={m.value} value={m.value} style={{ color: (themeColors as any)[themeColor].primary }}>{m.label}</option>))}
               </select>
               <select
                 value={endYear}
                 onChange={(e) => onEndYearChange(e.target.value)}
                 className={clsx("text-sm text-gray-200 outline-none w-20 rounded", `focus:ring-2 focus:ring-${themeColor}-500`)}
-                style={{ backgroundColor: "#1f2937", color: themeColors[themeColor].primary }}
+                style={{ backgroundColor: "#1f2937", color: (themeColors as any)[themeColor].primary }}
                 aria-label="Ano final"
               >
-                {years.map((y) => (<option key={y} value={y} style={{ color: themeColors[themeColor].primary }}>{y}</option>))}
+                {years.map((y) => (<option key={y} value={y} style={{ color: (themeColors as any)[themeColor].primary }}>{y}</option>))}
               </select>
-              <button onClick={onSearch} className={`${themeColors[themeColor].bg} hover:${themeColors[themeColor].hover} p-1 rounded text-white transition ml-1`} aria-label="Buscar dados">
+              <button onClick={onSearch} className={`${(themeColors as any)[themeColor].bg} hover:${(themeColors as any)[themeColor].hover} p-1 rounded text-white transition ml-1`} aria-label="Buscar dados">
                 <Search size={14} />
               </button>
             </div>
@@ -384,7 +384,7 @@ function Header({ selectedCategory, onCategoryChange, startMonth, startYear, end
             </button>
           </>
         )}
-        <button className={`${themeColors[themeColor].bg} hover:${themeColors[themeColor].hover} px-4 py-2 rounded-lg text-sm font-medium transition`} aria-label="Atualizar dados">
+        <button className={`${(themeColors as any)[themeColor].bg} hover:${(themeColors as any)[themeColor].hover} px-4 py-2 rounded-lg text-sm font-medium transition`} aria-label="Atualizar dados">
           Atualizar Dados
         </button>
       </div>
@@ -395,7 +395,7 @@ function Header({ selectedCategory, onCategoryChange, startMonth, startYear, end
 function KPICard({ title, value, trend, icon: Icon, isPercentage = false, themeColor }: KPICardProps) {
   return (
     <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 flex items-center gap-6">
-      <div className={`p-6 ${themeColors[themeColor].bg}/10 rounded-lg`}>
+      <div className={`p-6 ${(themeColors as any)[themeColor].bg}/10 rounded-lg`}>
         <Icon size={24} className={`text-${themeColor}-400`} />
       </div>
       <div className="flex-1 text-left">
@@ -520,8 +520,8 @@ function FinancialTab({ data, selectedCategory, setSelectedCategory, startMonth 
   return (
     <main className="flex-1 overflow-y-auto p-8 space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KPICard title="Previsto Total" value={totals.totalPrevisto} trend={parseFloat(categoryRanges[selectedCategory as CategoryKey]?.trend?.() || (Math.random() * 10 - 5).toFixed(1))} icon={TrendingUp} themeColor={themeColor} />
-        <KPICard title={isRevenueTab ? "Receita Total" : "Realizado Total"} value={totals.totalRealizado || totals.totalReceitaBruta || totals.totalReceitaLiquida || totals.totalResultado} trend={parseFloat(categoryRanges[selectedCategory as CategoryKey]?.trend?.() || (Math.random() * 8 - 4).toFixed(1))} icon={DollarSign} themeColor={themeColor} />
+        <KPICard title="Previsto Total" value={totals.totalPrevisto} trend={parseFloat((categoryRanges as any)[selectedCategory]?.trend?.() || (Math.random() * 10 - 5).toFixed(1))} icon={TrendingUp} themeColor={themeColor} />
+        <KPICard title={isRevenueTab ? "Receita Total" : "Realizado Total"} value={totals.totalRealizado || totals.totalReceitaBruta || totals.totalReceitaLiquida || totals.totalResultado} trend={parseFloat((categoryRanges as any)[selectedCategory]?.trend?.() || (Math.random() * 8 - 4).toFixed(1))} icon={DollarSign} themeColor={themeColor} />
         <KPICard title="Variação Geral" value={Math.abs(totals.variacao)} trend={totals.variacao} icon={TrendingUp} isPercentage themeColor={themeColor} />
       </div>
       <GeneralInfo data={data} selectedCategory={selectedCategory} />
