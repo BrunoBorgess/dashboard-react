@@ -46,7 +46,7 @@ function Sidebarr() {
     <aside className="w-60 h-screen bg-gray-900 border-r border-gray-800 flex flex-col fixed">
       <div className="p-6 border-b border-gray-800">
         <h1 className="text-xl font-bold text-white">Dashboard Financeiro</h1>
-        <p className="text-xs text-gray-400 mt-1">Receita Operacional Líquida</p>
+        <p className="text-xs text-gray-400 mt-1">Controle financeiro</p>
       </div>
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         <SidebarItem
