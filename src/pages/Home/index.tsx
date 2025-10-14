@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { DollarSign, TrendingUp, Settings } from "lucide-react";
 import clsx from "clsx";
@@ -55,7 +55,6 @@ const categoryRanges: Record<string, { min: number; max: number; variation: numb
   "Descontos sobre Vendas": { min: -4000, max: -1000, variation: 150 },
   "Fretes sobre Vendas": { min: -5000, max: -1500, variation: 200 },
 };
-
 
 const getMonthNames = () => {
   const startDate = new Date(2025, 0, 1); // Janeiro 2025
@@ -114,7 +113,14 @@ const KPICard = ({ title, value, trend, icon: Icon, isPercentage = false, themeC
     </div>
     <div className="flex-1">
       <h3 className="text-sm text-gray-400 uppercase font-medium">{title}</h3>
-      <p className="text-2xl font-bold text-white mt-2">{isPercentage ? `${value.toFixed(1)}%` : `R$ ${value.toLocaleString("pt-BR")}`}</p>
+      <p className="text-2xl font-bold text-white mt-2">
+        {isPercentage
+          ? `${value.toFixed(1)}%`
+          : `R$ ${value.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`}
+      </p>
       <span className={clsx("text-sm font-medium", trend >= 0 ? "text-green-400" : "text-red-400")}>{trend >= 0 ? "+" : ""}{trend.toFixed(1)}%</span>
     </div>
   </div>
@@ -146,8 +152,60 @@ function Home() {
     ];
   }, [topCategories, totals]);
 
+  // Custom label renderer to show only percentage inside the slice
+  const renderCustomLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5; // Center of the slice
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#ffffff"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={12}
+        style={{ pointerEvents: 'none' }}
+      >
+        {(percent * 100).toFixed(1)}%
+      </text>
+    );
+  };
+
+  // Detect zoom level to hide legend
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  useEffect(() => {
+    const checkZoomLevel = () => {
+      const zoomLevel = window.devicePixelRatio || 1;
+      setIsZoomed(zoomLevel > 1.5); // Hide legend if zoom > 150%
+    };
+
+    checkZoomLevel();
+    window.addEventListener('resize', checkZoomLevel);
+    return () => window.removeEventListener('resize', checkZoomLevel);
+  }, []);
+
   return (
     <main className="flex-1 p-8 space-y-8 ml-60">
+      <style>
+        {`
+          @media (max-width: 600px) or (max-height: 400px) {
+            .recharts-legend-wrapper {
+              display: none !important;
+            }
+          }
+        `}
+      </style>
       <div>
         <h2 className="text-2xl font-bold text-white">Bem-vindo ao Dashboard Financeiro</h2>
         <p className="text-gray-400 mt-2">Visualize os principais indicadores financeiros e tome decisões informadas com base nos dados de 2025.</p>
@@ -166,21 +224,56 @@ function Home() {
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="40%"
-                outerRadius={140}
-                label={({ name, percent }) => `${name}: ${((percent as number) * 100).toFixed(1)}%`}
-                labelLine={true}
+                cy="50%"
+                outerRadius={100}
+                innerRadius={30} // Added to ensure space for labels
                 paddingAngle={3}
+                label={renderCustomLabel}
+                labelLine={false} // No label lines for internal labels
               >
                 {topCategories.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLOR_SETS[themeColor].default[index % COLOR_SETS[themeColor].default.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLOR_SETS[themeColor].default[index % COLOR_SETS[themeColor].default.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "#e5e7eb", borderRadius: "12px" }}
-                formatter={(value: number, name: string) => [`R$ ${value.toLocaleString("pt-BR")} até Outubro/2025`, name]}
+                contentStyle={{
+                  backgroundColor: "#1f2937",
+                  border: "none",
+                  color: "#ffffff !important", // Força a cor branca com !important
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                  padding: "8px 12px",
+                }}
+                itemStyle={{
+                  color: "#ffffff", // Estilo adicional para itens do tooltip
+                }}
+                formatter={(value: number, name: string) => [
+                  `R$ ${value.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} até Outubro/2025`,
+                  name,
+                ]}
+
               />
-              <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: 14, paddingTop: 20, lineHeight: "1.5rem" }} />
+              {!isZoomed && (
+                <Legend
+                  layout="horizontal"
+                  align="center"
+                  verticalAlign="bottom"
+                  wrapperStyle={{
+                    fontSize: 12,
+                    paddingTop: 15,
+                    lineHeight: "1.2rem",
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                />
+              )}
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -189,7 +282,7 @@ function Home() {
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <DollarSign size={20} className={`text-${themeColor}-400`} /> Resumo de 2025
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="flex flex-col gap-4 mt-4">
               <KPICard
                 title="Total Previsto"
                 value={totals.totalPrevisto}
@@ -214,6 +307,7 @@ function Home() {
               />
             </div>
           </div>
+
           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <TrendingUp size={20} className={`text-${themeColor}-400`} /> Destaques
@@ -227,16 +321,20 @@ function Home() {
               ))}
             </ul>
           </div>
+
           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Settings size={20} className={`text-${themeColor}-400`} /> Atualizações Recentes
             </h3>
-            <p className="text-gray-400 mt-4">Versão 2.2: Destaques das principais categorias de gastos e relatórios otimizados para 2025.</p>
+            <p className="text-gray-400 mt-4">
+              Versão 2.2: Destaques das principais categorias de gastos e relatórios otimizados para 2025.
+            </p>
           </div>
         </div>
+
       </div>
       <div className="p-6 bg-gray-800 rounded-2xl border border-gray-700 text-sm text-gray-400 text-center">
-        Dashboard Financeiro v2.2 
+        Dashboard Financeiro v2.2
       </div>
     </main>
   );

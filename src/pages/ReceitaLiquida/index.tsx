@@ -168,7 +168,14 @@ const KPICard = ({ title, value, trend, icon: Icon, isPercentage = false, themeC
     </div>
     <div className="flex-1">
       <h3 className="text-sm text-gray-400 uppercase font-medium">{title}</h3>
-      <p className="text-2xl font-bold text-white mt-2">{isPercentage ? `${value.toFixed(1)}%` : `R$ ${value.toLocaleString("pt-BR")}`}</p>
+      <p className="text-2xl font-bold text-white mt-2">
+        {isPercentage
+          ? `${value.toFixed(1)}%`
+          : `R$ ${value.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`}
+      </p>
       <span className={clsx("text-sm font-medium", trend >= 0 ? "text-green-400" : "text-red-400")}>{trend >= 0 ? "+" : ""}{trend.toFixed(1)}%</span>
     </div>
   </div>
@@ -193,9 +200,10 @@ const CategoryChart = ({ data, category, isFinal = false, isSingleMonth, themeCo
           <Tooltip
             contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "#e5e7eb", borderRadius: "12px" }}
             formatter={(value: number, name: string) => [
-              `${value >= 0 ? 'R$' : '-R$'} ${Math.abs(value).toLocaleString("pt-BR")}`,
+              `${value >= 0 ? 'R$' : '-R$'} ${Math.abs(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
               name + (["Descontos sobre Vendas", "Fretes sobre Vendas"].includes(category) ? " (dedução)" : "")
             ]}
+
           />
           {!isFinal && revenueCategories.includes(category) && !isSingleMonth ? (
             <>
@@ -355,52 +363,95 @@ function ReceitaLiquida() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
             <h4 className="text-lg font-bold text-white mb-4">Distribuição por Categoria</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              {selectedCategory ? (
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    label={({ name, percent }) => `${name}: ${((percent as number) * 100).toFixed(1)}%`}
-                    labelLine={true}
-                    paddingAngle={5}
-                  >
-                    {pieData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLOR_SETS[themeColor].default[index % COLOR_SETS[themeColor].default.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "#e5e7eb", borderRadius: "12px" }}
-                    formatter={(value: number, name: string) => [
-                      `${value >= 0 ? 'R$' : '-R$'} ${Math.abs(value).toLocaleString("pt-BR")}`,
-                      name + (["Descontos sobre Vendas", "Fretes sobre Vendas"].includes(name) ? " (dedução)" : "")
-                    ]}
-                  />
-                  <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 12, paddingLeft: 20 }} />
-                </PieChart>
-              ) : (
-                <BarChart data={pieData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis type="number" stroke="#e5e7eb" domain={['auto', 'auto']} />
-                  <YAxis dataKey="name" type="category" stroke="#e5e7eb" width={120} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "#1f2937", border: "none", color: "#e5e7eb", borderRadius: "12px" }}
-                    formatter={(value: number, name: string) => [
-                      `${value >= 0 ? 'R$' : '-R$'} ${Math.abs(value).toLocaleString("pt-BR")}`,
-                      name + (["Descontos sobre Vendas", "Fretes sobre Vendas"].includes(name) ? " (dedução)" : "")
-                    ]}
-                  />
-                  <Bar dataKey="value" name="Realizado">
-                    {pieData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLOR_SETS[themeColor].default[index % COLOR_SETS[themeColor].default.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              )}
+        {selectedCategory ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label={({ name, percent }) => `${name}: ${((percent as number) * 100).toFixed(1)}%`}
+                labelLine={true}
+                paddingAngle={5}
+              >
+                {pieData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLOR_SETS[themeColor].default[index % COLOR_SETS[themeColor].default.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#1f2937",
+                  border: "none",
+                  color: "#ffffff !important",
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                  padding: "8px 12px",
+                }}
+                itemStyle={{
+                  color: "#ffffff",
+                }}
+                formatter={(value: number, name: string) => [
+                  `${value >= 0 ? 'R$' : '-R$'} ${Math.abs(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                  name + (["Descontos sobre Vendas", "Fretes sobre Vendas"].includes(name) ? " (dedução)" : "")
+                ]}
+              />
+              <Legend
+                layout="vertical"
+                align="right"
+                verticalAlign="middle"
+                wrapperStyle={{ fontSize: 12, paddingLeft: 20 }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+            <ResponsiveContainer width="100%" height={600}>
+              <BarChart
+                data={pieData}
+                layout="vertical"
+                margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+                height={600}
+              >
+                <XAxis type="number" stroke="#e5e7eb" domain={['auto', 'auto']} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  stroke="#e5e7eb"
+                  width={180}
+                  fontSize={10}
+                  tickMargin={10}
+                  interval={0}
+                  style={{ fontSize: '10px' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "none",
+                    color: "#ffffff !important",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    padding: "8px 12px",
+                  }}
+                  itemStyle={{
+                    color: "#ffffff",
+                  }}
+                  formatter={(value: number, name: string) => [
+                    `${value >= 0 ? 'R$' : '-R$'} ${Math.abs(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    name + (["Descontos sobre Vendas", "Fretes sobre Vendas"].includes(name) ? " (dedução)" : "")
+                  ]}
+                />
+                <Bar dataKey="value" name="Realizado">
+                  {pieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLOR_SETS[themeColor].default[index % COLOR_SETS[themeColor].default.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
+          </div>
+        )}
           </div>
           <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
             <h4 className="text-lg font-bold text-white mb-4">Detalhes {selectedCategory || 'Gerais'}</h4>
